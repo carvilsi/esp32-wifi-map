@@ -12,6 +12,7 @@
 #include "esp_event.h"
 #include "nvs_flash.h"
 #include "rom/ets_sys.h"
+#include <time.h>
 
 static const int RX_BUF_SIZE = 1024;
 
@@ -73,16 +74,18 @@ static void wifi_scan(void) {
         uint16_t ap_count = 0;
         memset(ap_info, 0, sizeof(ap_info));
 
+        time_t now;
         esp_wifi_scan_start(NULL, true);
         ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&number, ap_info));
         ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(&ap_count));
         for (int i = 0; (i < DEFAULT_SCAN_LIST_SIZE) && (i < ap_count); i++) {
+                time(&now);
                 char *hashed = (char *)malloc(sizeof(ap_info[i].ssid) + sizeof(int) * 2);
                 sprintf(hashed, "%s_%d_%d", ap_info[i].ssid,  ap_info[i].pairwise_cipher, ap_info[i].group_cipher);
                 int hsh = hash(hashed);
                 float dst = calc_dist_rssi(ap_info[i].rssi);
                 char *ap = (char *)malloc(sizeof(hsh) + sizeof(dst) + sizeof(ap_info[i].authmode) + 10);
-                sprintf(ap, "%x;%.2f;%d\n", hsh, dst, ap_info[i].authmode);
+                sprintf(ap, "%x;%.2f;%d;%lld\n", hsh, dst, ap_info[i].authmode, now);
                 sendData(ap);
                 free(hashed);
                 free(ap);
