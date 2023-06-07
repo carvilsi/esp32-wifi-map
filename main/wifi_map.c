@@ -19,8 +19,9 @@ static const int RX_BUF_SIZE = 1024;
 #define TXD_PIN (GPIO_NUM_4)
 #define RXD_PIN (GPIO_NUM_5)
 #define DEFAULT_SCAN_LIST_SIZE 20
+#define MS_DELAY 1000 // scanning wifi every 1s
 
-static const char *TAG = "WFCSN";
+static const char *TAG = "WiFiMap";
 
 unsigned int hash(char *str) {
         unsigned int hash = 0;
@@ -68,34 +69,39 @@ static void wifi_init() {
         ESP_ERROR_CHECK(esp_wifi_start());
 }
 
-static void wifi_scan(void) {
-        uint16_t number = DEFAULT_SCAN_LIST_SIZE;
-        wifi_ap_record_t ap_info[DEFAULT_SCAN_LIST_SIZE];
-        uint16_t ap_count = 0;
-        memset(ap_info, 0, sizeof(ap_info));
+static void wifi_scan(void ) {
+/*static void wifi_scan(void *pvParameters) {*/
+        /*TickType_t xDelay = MS_DELAY / portTICK_PERIOD_MS;*/
+        /*for (;;) {*/
+                /*vTaskDelay(xDelay);*/
+                uint16_t number = DEFAULT_SCAN_LIST_SIZE;
+                wifi_ap_record_t ap_info[DEFAULT_SCAN_LIST_SIZE];
+                uint16_t ap_count = 0;
+                memset(ap_info, 0, sizeof(ap_info));
 
-        time_t now;
-        esp_wifi_scan_start(NULL, true);
-        ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&number, ap_info));
-        ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(&ap_count));
-        for (int i = 0; (i < DEFAULT_SCAN_LIST_SIZE) && (i < ap_count); i++) {
-                time(&now);
-                char *hashed = (char *)malloc(sizeof(ap_info[i].ssid) + sizeof(int) * 2);
-                sprintf(hashed, "%s_%d_%d", ap_info[i].ssid,  ap_info[i].pairwise_cipher, ap_info[i].group_cipher);
-                int hsh = hash(hashed);
-                float dst = calc_dist_rssi(ap_info[i].rssi);
-                char *ap = (char *)malloc(sizeof(hsh) + sizeof(dst) + sizeof(ap_info[i].authmode) + 10);
-                sprintf(ap, "%x;%.2f;%d;%lld\n", hsh, dst, ap_info[i].authmode, now);
-                sendData(ap);
-                free(hashed);
-                free(ap);
-        }
-        esp_wifi_scan_stop();
+                time_t now;
+                esp_wifi_scan_start(NULL, true);
+                ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&number, ap_info));
+                ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(&ap_count));
+                for (int i = 0; (i < DEFAULT_SCAN_LIST_SIZE) && (i < ap_count); i++) {
+                        time(&now);
+                        char *hashed = (char *)malloc(sizeof(ap_info[i].ssid) + sizeof(int) * 2);
+                        sprintf(hashed, "%s_%d_%d", ap_info[i].ssid,  ap_info[i].pairwise_cipher, ap_info[i].group_cipher);
+                        int hsh = hash(hashed);
+                        float dst = calc_dist_rssi(ap_info[i].rssi);
+                        char *ap = (char *)malloc(sizeof(hsh) + sizeof(dst) + sizeof(ap_info[i].authmode) + 10);
+                        sprintf(ap, "%x;%.2f;%d;%lld\n", hsh, dst, ap_info[i].authmode, now);
+                        sendData(ap);
+                        free(hashed);
+                        free(ap);
+                }
+                esp_wifi_scan_stop();
+        /*} */
 }
 
 void app_main(void) {
         init_uart();
-        esp_log_level_set(TAG, ESP_LOG_ERROR);
+        esp_log_level_set(TAG, ESP_LOG_NONE);
         esp_err_t ret = nvs_flash_init();
         if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
                 ESP_ERROR_CHECK(nvs_flash_erase());
@@ -103,9 +109,9 @@ void app_main(void) {
         }
         ESP_ERROR_CHECK(ret);
         wifi_init();
-        vTaskDelay(5);
+        /*xTaskCreate(wifi_scan, TAG, 2500, NULL, tskIDLE_PRIORITY, NULL);  */
         for (;;) {
                 wifi_scan();
         }
-    
 }
+
