@@ -16,8 +16,8 @@
 
 static const int RX_BUF_SIZE = 1024;
 
-#define TXD_PIN (GPIO_NUM_4)
-#define RXD_PIN (GPIO_NUM_5)
+#define TXD_PIN (GPIO_NUM_17)
+#define RXD_PIN (GPIO_NUM_16)
 #define DEFAULT_SCAN_LIST_SIZE 20
 #define MS_DELAY 1000 // scanning wifi every 1s
 
@@ -47,14 +47,14 @@ const uart_config_t uart_config = {
 };
 
 void init_uart(void) {
-        uart_driver_install(UART_NUM_0, RX_BUF_SIZE * 2, 0, 0, NULL, 0);
-        uart_param_config(UART_NUM_0, &uart_config);
-        uart_set_pin(UART_NUM_0, TXD_PIN, RXD_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+        uart_driver_install(UART_NUM_2, RX_BUF_SIZE * 2, 0, 0, NULL, 0);
+        uart_param_config(UART_NUM_2, &uart_config);
+        uart_set_pin(UART_NUM_2, TXD_PIN, RXD_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
 }
 
 int sendData(const char* data) {
         const int len = strlen(data);
-        const int txBytes = uart_write_bytes(UART_NUM_0, data, len);
+        const int txBytes = uart_write_bytes(UART_NUM_2, data, len);
         return txBytes;
 }
 
@@ -69,11 +69,10 @@ static void wifi_init() {
         ESP_ERROR_CHECK(esp_wifi_start());
 }
 
-static void wifi_scan(void ) {
-/*static void wifi_scan(void *pvParameters) {*/
-        /*TickType_t xDelay = MS_DELAY / portTICK_PERIOD_MS;*/
-        /*for (;;) {*/
-                /*vTaskDelay(xDelay);*/
+static void wifi_scan(void *pvParameters) {
+        TickType_t xDelay = MS_DELAY / portTICK_PERIOD_MS;
+        for (;;) {
+                vTaskDelay(xDelay);
                 uint16_t number = DEFAULT_SCAN_LIST_SIZE;
                 wifi_ap_record_t ap_info[DEFAULT_SCAN_LIST_SIZE];
                 uint16_t ap_count = 0;
@@ -96,7 +95,7 @@ static void wifi_scan(void ) {
                         free(ap);
                 }
                 esp_wifi_scan_stop();
-        /*} */
+        }
 }
 
 void app_main(void) {
@@ -109,9 +108,6 @@ void app_main(void) {
         }
         ESP_ERROR_CHECK(ret);
         wifi_init();
-        /*xTaskCreate(wifi_scan, TAG, 2500, NULL, tskIDLE_PRIORITY, NULL);  */
-        for (;;) {
-                wifi_scan();
-        }
+        xTaskCreate(wifi_scan, TAG, 4500, NULL, tskIDLE_PRIORITY, NULL);  
 }
 

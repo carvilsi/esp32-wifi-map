@@ -14,8 +14,8 @@ $ `idf.py flash monitor`
 
 ## Connection FlipperZero and ESP32
 
-| Flipper Zero GPIO | ESP32 |
-| ----------------- | ----- |
-|      GND          |  GND  |
-|      RX           |  TX0  |
-|      3V3          |  3V3  |
+| Flipper Zero GPIO |    ESP32    |
+|-------------------|-------------|
+|      GND          |     GND     |
+|      RX           | TXD GPIO_17 |
+|      3V3          |     3V3     |
