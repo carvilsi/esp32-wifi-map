@@ -23,13 +23,16 @@ static const int RX_BUF_SIZE = 1024;
 
 static const char *TAG = "WiFiMap";
 
-unsigned int hash(char *str) {
-        unsigned int hash = 0;
-        int c;
-        while ( (c = *str++) ) {
-                hash += c;
-        }
-        return hash;
+static unsigned long hash(char *str)
+{
+    unsigned long hash = 5381;
+    int c;
+
+    while ((c = *str++)) {
+        hash = ((hash << 5) + hash) + c;
+    }
+
+    return hash;
 }
 
 float calc_dist_rssi(int rssi) {
