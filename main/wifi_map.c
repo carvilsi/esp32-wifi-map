@@ -3,6 +3,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_system.h"
+
+#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
 #include "esp_log.h"
 #include "driver/uart.h"
 #include "string.h"
@@ -20,6 +22,7 @@ static const int RX_BUF_SIZE = 1024;
 #define RXD_PIN (GPIO_NUM_16)
 #define DEFAULT_SCAN_LIST_SIZE 20
 #define MS_DELAY 1000 // scanning wifi every 1s
+
 
 static const char *TAG = "WiFiMap";
 
@@ -91,6 +94,7 @@ static void wifi_scan(void *pvParameters) {
                         sprintf(hashed, "%s_%d_%d", ap_info[i].ssid,  ap_info[i].pairwise_cipher, ap_info[i].group_cipher);
                         int hsh = hash(hashed);
                         float dst = calc_dist_rssi(ap_info[i].rssi);
+                        ESP_LOGD(TAG, "AP: %s x%x @: %.2fm",ap_info[i].ssid, hsh, dst);
                         char *ap = (char *)malloc(sizeof(hsh) + sizeof(dst) + sizeof(ap_info[i].authmode) + 10);
                         sprintf(ap, "%x;%.2f;%d;%lld\n", hsh, dst, ap_info[i].authmode, now);
                         sendData(ap);
@@ -111,6 +115,6 @@ void app_main(void) {
         }
         ESP_ERROR_CHECK(ret);
         wifi_init();
-        xTaskCreate(wifi_scan, TAG, 4500, NULL, tskIDLE_PRIORITY, NULL);  
+        xTaskCreate(wifi_scan, TAG, 4500, NULL, tskIDLE_PRIORITY, NULL);
 }
 
