@@ -76,8 +76,8 @@ static void wifi_scan(void) {
 
         time_t now;
         esp_wifi_scan_start(NULL, true);
-        ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&number, ap_info));
         ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(&ap_count));
+        ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&number, ap_info));
         for (int i = 0; (i < DEFAULT_SCAN_LIST_SIZE) && (i < ap_count); i++) {
                 time(&now);
                 char *hashed = (char *)malloc(sizeof(ap_info[i].ssid) + sizeof(int) * 2);
@@ -96,6 +96,7 @@ static void wifi_scan(void) {
 void app_main(void) {
         init_uart();
         esp_log_level_set(TAG, ESP_LOG_ERROR);
+        /*esp_log_level_set(TAG, ESP_LOG_DEBUG);*/
         esp_err_t ret = nvs_flash_init();
         if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
                 ESP_ERROR_CHECK(nvs_flash_erase());
@@ -103,9 +104,8 @@ void app_main(void) {
         }
         ESP_ERROR_CHECK(ret);
         wifi_init();
-        vTaskDelay(5);
+        vTaskDelay(8);
         for (;;) {
                 wifi_scan();
         }
-    
 }
