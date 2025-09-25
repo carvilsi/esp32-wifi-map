@@ -86,8 +86,8 @@ static void wifi_scan(void *pvParameters) {
 
                 time_t now;
                 esp_wifi_scan_start(NULL, true);
-                ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&number, ap_info));
                 ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(&ap_count));
+                ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&number, ap_info));
                 for (int i = 0; (i < DEFAULT_SCAN_LIST_SIZE) && (i < ap_count); i++) {
                         time(&now);
                         char *hashed = (char *)malloc(sizeof(ap_info[i].ssid) + sizeof(int) * 2);
