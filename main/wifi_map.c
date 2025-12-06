@@ -90,12 +90,13 @@ static void wifi_scan(void *pvParameters) {
                 ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&number, ap_info));
                 for (int i = 0; (i < DEFAULT_SCAN_LIST_SIZE) && (i < ap_count); i++) {
                         time(&now);
-                        char *hashed = (char *)malloc(sizeof(ap_info[i].ssid) + sizeof(int) * 2);
-                        sprintf(hashed, "%s_%d_%d", ap_info[i].ssid,  ap_info[i].pairwise_cipher, ap_info[i].group_cipher);
+                        char *hashed = (char *)malloc(sizeof(ap_info[i].ssid) + sizeof(int) * 2 + sizeof(int) * 6);
+                        sprintf(hashed, "%s%d%d%x%x%x%x%x%x", ap_info[i].ssid,  ap_info[i].pairwise_cipher, ap_info[i].group_cipher, ap_info[i].bssid[0], ap_info[i].bssid[1], ap_info[i].bssid[2], ap_info[i].bssid[3], ap_info[i].bssid[4], ap_info[i].bssid[5]);
+                        ESP_LOGD(TAG, "hashed: %s", hashed);
                         int hsh = hash(hashed);
                         float dst = calc_dist_rssi(ap_info[i].rssi);
-                        ESP_LOGD(TAG, "AP MAC: %s", ap_info[i]);
                         ESP_LOGD(TAG, "AP: %s x%x @: %.2fm",ap_info[i].ssid, hsh, dst);
+                        ESP_LOGD(TAG, "AP MAC: %x:%x:%x:%x:%x:%x", ap_info[i].bssid[0], ap_info[i].bssid[1], ap_info[i].bssid[2], ap_info[i].bssid[3], ap_info[i].bssid[4], ap_info[i].bssid[5]);
                         char *ap = (char *)malloc(sizeof(hsh) + sizeof(dst) + sizeof(ap_info[i].authmode) + 10);
                         sprintf(ap, "%x;%.2f;%d;%lld\n", hsh, dst, ap_info[i].authmode, now);
                         sendData(ap);
@@ -108,7 +109,7 @@ static void wifi_scan(void *pvParameters) {
 
 void app_main(void) {
         init_uart();
-        esp_log_level_set(TAG, ESP_LOG_DEBUG);
+        esp_log_level_set(TAG, ESP_LOG_NONE);
         esp_err_t ret = nvs_flash_init();
         if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
                 ESP_ERROR_CHECK(nvs_flash_erase());
