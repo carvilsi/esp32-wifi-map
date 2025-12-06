@@ -19,3 +19,9 @@ $ `idf.py flash monitor`
 |      GND          |     GND     |
 |      RX           | TXD GPIO_17 |
 |      3V3          |     3V3     |
+
+## Notes
+
+### ESP32 WiFi
+
+- [api-reference: network - wifi](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/network/esp_wifi.html)
