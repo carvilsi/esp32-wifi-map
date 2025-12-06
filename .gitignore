@@ -3,3 +3,4 @@ build/
 .*.swp
 tags
 .cache/
+sdkconfig
