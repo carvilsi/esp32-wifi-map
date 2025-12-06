@@ -94,7 +94,7 @@ static void wifi_scan(void *pvParameters) {
                         sprintf(hashed, "%s_%d_%d", ap_info[i].ssid,  ap_info[i].pairwise_cipher, ap_info[i].group_cipher);
                         int hsh = hash(hashed);
                         float dst = calc_dist_rssi(ap_info[i].rssi);
-                        ESP_LOG_DEBUG("AP MAC: %s", ap_info[i]);
+                        ESP_LOGD(TAG, "AP MAC: %s", ap_info[i]);
                         ESP_LOGD(TAG, "AP: %s x%x @: %.2fm",ap_info[i].ssid, hsh, dst);
                         char *ap = (char *)malloc(sizeof(hsh) + sizeof(dst) + sizeof(ap_info[i].authmode) + 10);
                         sprintf(ap, "%x;%.2f;%d;%lld\n", hsh, dst, ap_info[i].authmode, now);
